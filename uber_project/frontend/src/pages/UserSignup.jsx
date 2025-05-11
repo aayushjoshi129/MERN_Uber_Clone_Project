@@ -1,24 +1,42 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useContext } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { UserDataContext  } from "../context/UserContext";
 
 const UserSignup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  const [firstname, setFirstName] = useState("");
+  const [lastname, setLastName] = useState("");
   const [userData, setUserData] = useState({});
 
-  const submitHandler = (e) => {
+  const navigate = useNavigate();
+
+  const {user, setUser} = React.useContext(UserDataContext);
+
+  const submitHandler = async (e) => {
     e.preventDefault();
-    setUserData({
-      fullName:{
-        firstName: firstName,
-        lastName: lastName,
+    const newUser = {
+      fullname: {
+        firstname: firstname,
+        lastname: lastname,
       },
       email: email,
       password: password,
-    });
+    };
 
+    const response = await axios.post(
+      `${import.meta.env.VITE_BASE_URL}/users/register`,
+      newUser
+    );
+
+    if (response.status === 201) {
+      const data = response.data;
+      setUser(data.user);
+      localStorage.setItem("token", data.token);
+      navigate("/home");
+    }
+    
     setFirstName("");
     setLastName("");
     setEmail("");
@@ -41,7 +59,7 @@ const UserSignup = () => {
             <input
               className="bg-[#eeee] w-1/2 rounded px-4 py-2 border text-lg placeholder:text-base "
               required
-              value={firstName}
+              value={firstname}
               onChange={(e) => setFirstName(e.target.value)}
               type="text"
               placeholder="John"
@@ -49,7 +67,7 @@ const UserSignup = () => {
             <input
               className="bg-[#eeee] w-1/2 rounded px-4 py-2 border text-lg placeholder:text-base "
               required
-              value={lastName}
+              value={lastname}
               onChange={(e) => setLastName(e.target.value)}
               type="text"
               placeholder="Doe"
